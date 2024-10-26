@@ -1,0 +1,16 @@
+{
+    "name": "toddy/jogodobichomvc",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/",
+            "Core\\": "core/"
+        }
+    },
+    "authors": [
+        {
+            "name": "LuisDevLipe",
+            "email": "luisfelipebsj@gmail.com"
+        }
+    ],
+    "require": {}
+}
