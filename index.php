@@ -9,6 +9,7 @@ if (!class_exists("Core\Router\Router")) {
         "Class Core\Router not found. Please check your autoload configuration."
     );
 }
+
 $router = new Router();
 
 ?>

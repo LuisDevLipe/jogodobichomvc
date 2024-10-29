@@ -1,5 +1,5 @@
 <?php
-namespace Core\Models;
+namespace App\Models;
 use Core\Database\Connection;
 class Credentials
 {

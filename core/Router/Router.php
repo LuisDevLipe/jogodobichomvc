@@ -1,5 +1,6 @@
 <?php
 namespace Core\Router;
+use Core\Router\Routes;
 
 class Router
 {
@@ -12,20 +13,8 @@ class Router
 
     private function loadRoutes()
     {
-        $this->routes = [
-            "/" => [
-                "controller" => "HomeController",
-                "method" => "index",
-            ],
-            "/login" => [
-                "controller" => "LoginController",
-                "method" => "index",
-            ],
-            "/login/auth" => [
-                "controller" => "LoginController",
-                "method" => "auth",
-            ],
-        ];
+        $this->routes = Routes::getRoutes();
+        
     }
 
     private function dispatch()
@@ -34,7 +23,7 @@ class Router
         $uri = parse_url($_SERVER["REQUEST_URI"]);
         $path = $uri['path'] == '/' ? '/' : rtrim($uri["path"], "/");
         $route = $this->routes[$path];
-        $controllerName = "Core\\Controllers\\" . $route["controller"];
+        $controllerName = "App\\Controllers\\" . $route["controller"];
         $controller = new $controllerName();
         $controller->{$route["method"]}();
     }
