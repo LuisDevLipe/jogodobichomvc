@@ -1,2 +1,2 @@
 # jogodobichomvc
-Projeto 2º Semestre me PHP.
+Projeto 2º Semestre em PHP.
