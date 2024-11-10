@@ -8,6 +8,10 @@
 </head>
 
 <body>
+    <nav>
+        <a href="/Login">Login</a>
+        
+    </nav>
     <h1>Home</h1>
     <p><?= $data[0] ?? '' ?></p>
 
