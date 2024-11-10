@@ -1,12 +1,19 @@
 <?php
+namespace App\Controllers;
+use Core\Controller;
+
 class Home extends Controller
 {
-    public function index($name = '')
+    public function __construct()
     {
-        $user = $this->model('User');
-
-        $user->name = $name;
-        $this->view('home/index', ['name' => $user->name]);
+        $this->view = $this->getView('Home/index');
+    }
+    public function index($params = [])
+    {
+        $user = $this->getModel('User', ['fullname' => 'Luis', 'email' => 'luis@google.com']);
+        echo $user->getFullname();
+        echo $user->getEmail();
+        $this->view->render();
     }
     public function test()
     {

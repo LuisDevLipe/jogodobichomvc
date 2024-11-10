@@ -1,18 +1,21 @@
 <?php
+namespace Core;
+// use Core;
+// use Core\View;
+
+use Core;
 
 class Controller
 {
-    public function model($model)
+
+    protected $view;
+    public function getModel($model, $constructor = []): object
     {
-        require_once '../App/Models/' . $model . '.php';
-        return new $model();
+        return ModelFactory::makeModel($model, $constructor);
+
     }
-    public function view($view, $data = [])
+    public function getView($view)
     {
-        require_once '../App/Views/' . $view . '.php';
+        return new View(viewPath: $view);
     }
-    // public function __construct()
-    // {
-    //     $this->view = new View();
-    // }
 }
