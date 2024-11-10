@@ -1,5 +1,6 @@
 <?php
 namespace Core;
+use App\Controllers;
 
 class App
 {
@@ -10,22 +11,31 @@ class App
     public function __construct()
     {
 
-        $url = $this->parseUrl();
+        $url = $this->parseUrl()['url'];
+        $this->params = $this->parseUrl()['params'];
+
         $url = $url ? $url : [$this->controller];
-        // dd($url);
+        // var_dump($url);
+        // dd($this->params);
         if (file_exists(filename: '../App/Controllers/' . $url[0] . '.php')) {
             $this->controller = $url[0];
             unset($url[0]);
+        } else if ($url[0] !== '') {
+            echo 'not found';
+            die();
         }
 
         require_once '../App/Controllers/' . $this->controller . '.php';
-
-        $this->controller = new $this->controller;
+        $controller = 'App\Controllers\\' . $this->controller;
+        $this->controller = new $controller();
 
         if (isset($url[1])) {
             if (method_exists(object_or_class: $this->controller, method: $url[1])) {
                 $this->method = $url[1];
                 unset($url[1]);
+            } else {
+                echo 'method not found';
+                die();
             }
         }
 
@@ -40,24 +50,29 @@ class App
             separator: '/',
             string: filter_var(
                 value: trim(
-                    string: $_SERVER['REQUEST_URI'],
+                    string: parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH),
                     characters: '/'
                 ),
                 filter: FILTER_SANITIZE_URL
             )
         );
 
-        // parse_str(string: ltrim(string: substr(string: $url[array_key_last(array:$url)], offset: stripos(haystack: $url[array_key_last(array:$url)], needle: '?')), characters: "?"), result: $query_string);
-        $url[array_key_last(array: $url)] = explode(
-        separator: '?',
-        string: $url[array_key_last(array: $url)]
-        )[0];
-        array_shift($url);
+        $params = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 
-        if (empty($url)) {
-            return false;
-        }
-        return $url;
+        // parse_str(string: ltrim(string: substr(string: $url[array_key_last(array:$url)], offset: stripos(haystack: $url[array_key_last(array:$url)], needle: '?')), characters: "?"), result: $query_string);
+        // $url[array_key_last(array: $url)] = explode(
+        // separator: '?',
+        // string: $url[array_key_last(array: $url)]
+        // )[0];
+        // array_shift($url);
+
+        // if (empty($url)) {
+        //     return false;
+        // }
+        return [
+            'url' => $url,
+            'params' => $params
+        ];
         // return [
         //     'url' => $url,
         //     'query_string' => $query_string,
