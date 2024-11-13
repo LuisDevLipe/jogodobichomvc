@@ -19,6 +19,7 @@
             </label>
             <input type="password" name="password" id="password">
         </fieldset>
+        <?= $data['error'] ?? '' ?>
         <button type="submit">Login</button>
     </form>
 </body>

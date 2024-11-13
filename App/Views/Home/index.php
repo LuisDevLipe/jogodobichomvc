@@ -10,6 +10,7 @@
 <body>
     <nav>
         <a href="/Login">Login</a>
+        <a href="/Register">Cadastro</a>
         
     </nav>
     <h1>Home</h1>
