@@ -1,6 +1,9 @@
 <?php
 namespace App\Models;
 use Core\Model;
+use App\Exceptions\UnableToPersistDataException;
+use App\Exceptions\UsernameNotFoundException;
+
 class Credential extends Model
 {
     private string $username;
@@ -12,49 +15,79 @@ class Credential extends Model
     private int $user_id;
     private $updated_at;
 
-    public bool $userNotFound = false;
+    public bool $usernameNotFound = false;
 
-
-    public function __construct(array $constructor = [username, password, user_id])
-    {
+    public function __construct(
+        array $constructor = [username, password, user_id]
+    ) {
         if (!empty($constructor)) {
-            $this->setUsername($constructor['username']);
-            $this->setPassword($constructor['password']);
-            $this->setUserId($constructor['user_id']);
+            $this->setUsername($constructor["username"]);
+            $this->setPassword($constructor["password"]);
+            $this->setUserId($constructor["user_id"]);
         } else {
-            $this->userNotFound = true;
+            $this->usernameNotFound = true;
         }
     }
 
     public function create(): Credential
     {
+        if ($this->username_exists()) {
+            return $this;
+        }
         $db_con = self::connect();
-        $stmt = $db_con->prepare('INSERT INTO credenciais (nomeUsuario, senha, usuario_id) VALUES (:username, :password, :user_id)');
+        $stmt = $db_con->prepare(
+            "INSERT INTO credenciais (nomeUsuario, senha, usuario_id) VALUES (:username, :password, :user_id)"
+        );
         $result = $stmt->execute([
-            'username' => $Credential->getUsername(),
-            'password' => $Credential->getPassword(),
-            'user_id' => $Credential->getUserId()
+            "username" => $this->getUsername(),
+            "password" => $this->getPassword(),
+            "user_id" => $this->getUserId(),
         ]);
-        return $result;
+        if (!$result) {
+            throw new UnableToPersistDataException();
+        }
+        $this->setUsername($result["nomeUsuario"]);
+        $this->setPassword($result["senha"]);
+        $this->setUserId($result["usuario_id"]);
+        $this->setIsAdmin($result["administrador"]);
+        $this->setLoginAttempts($result["tentativasLogin"]);
+        $this->setIsAccountLocked($result["contaTravada"]);
+        $this->setUpdatedAt(
+            new \DateTime(new \DateTimeZone("America/Sao Paulo"))
+        );
+        return $this;
     }
     public static function show($username): Credential
     {
         $db_con = self::connect();
-        $stmt = $db_con->prepare('SELECT * FROM credenciais WHERE nomeUsuario = :username');
-        $stmt->execute(['username' => 'admin']);
+        $stmt = $db_con->prepare(
+            "SELECT * FROM credenciais WHERE nomeUsuario = :username"
+        );
+        $stmt->execute(["username" => "admin"]);
         $result = $stmt->fetch();
         if (!$result) {
-            return new Credential([]);
+            throw new UsernameNotFoundException();
         }
-        return new Credential([
-            'username' => $result['nomeUsuario'],
-            'password' => $result['senha'],
-            'is_admin' => $result['administrador'],
-            'login_attempts' => $result['tentativasLogin'],
-            'is_account_locked' => $result['contaTravada'],
-            'user_id' => $result['usuario_id'],
-            'updated_at' => $result['updated_at']
-        ]);
+        // assign the result valuew to this instance
+        $this->setUsername($result["nomeUsuario"]);
+        $this->setPassword($result["senha"]);
+        $this->setUserId($result["usuario_id"]);
+        $this->setIsAdmin($result["administrador"]);
+        $this->setLoginAttempts($result["tentativasLogin"]);
+        $this->setIsAccountLocked($result["contaTravada"]);
+        $this->setUpdatedAt(
+            new \DateTime(new \DateTimeZone("America/Sao Paulo"))
+        );
+        return $this;
+    }
+    public function username_exists()
+    {
+        try {
+            $this->show($this->getUsername());
+            return true;
+        } catch (UsernameNotFoundException $e) {
+            return false;
+        }
     }
 
     public function getUsername(): string
@@ -86,9 +119,9 @@ class Credential extends Model
     {
         return $this->updated_at;
     }
-    public function getUserNotFound(): bool
+    public function getUsernameNotFound(): bool
     {
-        return $this->userNotFound;
+        return $this->usernameNotFound;
     }
 
     public function setUsername(string $username): void
@@ -119,10 +152,8 @@ class Credential extends Model
     {
         $this->updated_at = $updated_at;
     }
-    public function setUserNotFound(bool $userNotFound): void
+    public function setUsernameNotFound(bool $userNotFound): void
     {
         $this->userNotFound = $userNotFound;
     }
-
-
 }

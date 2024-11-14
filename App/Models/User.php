@@ -1,6 +1,9 @@
 <?php
 namespace App\Models;
 use Core\Model;
+use App\Exceptions\UnableToPersistDataException;
+
+
 class User extends Model
 {
     private int $id;
@@ -18,22 +21,32 @@ class User extends Model
     private int $endereco_id;
 
     public bool $userNotFound = false;
-    public function __construct(array $constructor = [fullname, dob, gender, mothername, cpf, email, celular, fixo, endereco_id])
-    {
+    public function __construct(
+        array $constructor = [
+            fullname,
+            dob,
+            gender,
+            mothername,
+            cpf,
+            email,
+            celular,
+            fixo,
+            endereco_id,
+        ]
+    ) {
         if (!empty($constructor)) {
-            $this->setFullname($constructor['fullname']);
-            $this->setDob($constructor['dob']);
-            $this->setGender($constructor['gender']);
-            $this->setMothername($constructor['mothername']);
-            $this->setCpf($constructor['cpf']);
-            $this->setEmail($constructor['email']);
-            $this->setCelular($constructor['celular']);
-            $this->setFixo($constructor['fixo']);
-            $this->setEnderecoId($constructor['endereco_id']);
+            $this->setFullname($constructor["fullname"]);
+            $this->setDob($constructor["dob"]);
+            $this->setGender($constructor["gender"]);
+            $this->setMothername($constructor["mothername"]);
+            $this->setCpf($constructor["cpf"]);
+            $this->setEmail($constructor["email"]);
+            $this->setCelular($constructor["celular"]);
+            $this->setFixo($constructor["fixo"]);
+            $this->setEnderecoId($constructor["endereco_id"]);
         } else {
             $this->userNotFound = true;
         }
-
     }
     public static function show($cpf): User
     {
@@ -42,91 +55,94 @@ class User extends Model
 
     public static function findById($user_id): User
     {
-        $stmt = self::connect()->prepare('SELECT * FROM usuarios WHERE id = :id');
-        $stmt->execute(['id' => $user_id]);
+        $stmt = self::connect()->prepare(
+            "SELECT * FROM usuarios WHERE id = :id"
+        );
+        $stmt->execute(["id" => $user_id]);
         $result = $stmt->fetch();
         if (!$result) {
             return new User([]);
         }
-        $newUser =  new User(
-            [
-                'fullname' => $result['nomeCompleto'],
-                'dob' => $result['dataNasc'],
-                'gender' => $result['genero'],
-                'mothername' => $result['nomeMae'],
-                'cpf' => $result['cpf'],
-                'email' => $result['email'],
-                'celular' => $result['celular'],
-                'fixo' => $result['fixo'],
-                'endereco_id' => $result['endereco_id']
-            ]
-        );
-        $newUser->setId($result['id']);
-        $newUser->setCreatedAt($result['created_at']);
-        $newUser->setUpdatedAt($result['updated_at']);
+        $newUser = new User([
+            "fullname" => $result["nomeCompleto"],
+            "dob" => $result["dataNasc"],
+            "gender" => $result["genero"],
+            "mothername" => $result["nomeMae"],
+            "cpf" => $result["cpf"],
+            "email" => $result["email"],
+            "celular" => $result["celular"],
+            "fixo" => $result["fixo"],
+            "endereco_id" => $result["endereco_id"],
+        ]);
+        $newUser->setId($result["id"]);
+        $newUser->setCreatedAt($result["created_at"]);
+        $newUser->setUpdatedAt($result["updated_at"]);
         return $newUser;
     }
 
     public function create(): User
     {
         $db_con = self::connect();
-        if($this->user_exists()){
+        if ($this->user_exists()) {
             return $this;
         }
-        $stmt = $db_con->prepare('INSERT INTO usuarios (nomeCompleto, dataNasc, genero, nomeMae, cpf, email, celular, fixo, endereco_id) VALUES (:fullname, :dob, :gender, :mothername, :cpf, :email, :celular, :fixo, :endereco_id)');
+        $stmt = $db_con->prepare(
+            "INSERT INTO usuarios (nomeCompleto, dataNasc, genero, nomeMae, cpf, email, celular, fixo, endereco_id) VALUES (:fullname, :dob, :gender, :mothername, :cpf, :email, :celular, :fixo, :endereco_id)"
+        );
         $result = $stmt->execute([
-            'fullname' => $this->getFullname(),
-            'dob' => $this->getDob(),
-            'gender' => $this->getGender(),
-            'mothername' => $this->getMothername(),
-            'cpf' => $this->getCpf(),
-            'email' => $this->getEmail(),
-            'celular' => $this->getCelular(),
-            'fixo' => $this->getFixo(),
-            'endereco_id' => $this->getEnderecoId()
+            "fullname" => $this->getFullname(),
+            "dob" => $this->getDob(),
+            "gender" => $this->getGender(),
+            "mothername" => $this->getMothername(),
+            "cpf" => $this->getCpf(),
+            "email" => $this->getEmail(),
+            "celular" => $this->getCelular(),
+            "fixo" => $this->getFixo(),
+            "endereco_id" => $this->getEnderecoId(),
         ]);
         if (!$result) {
-            return new User([]);
+            throw new UnableToPersistDataException('Unable to persist user data'');
         }
         $this->setId($db_con->lastInsertId());
-        $this->setCreatedAt($result['created_at']);
-        $this->setUpdatedAt($result['updated_at']);
+        $this->setCreatedAt($result["created_at"]);
+        $this->setUpdatedAt($result["updated_at"]);
         return $this;
-        
     }
-    public static function find(string $cpf):User
+    public static function find(string $cpf): User
     {
         $db_con = self::connect();
-        $stmt = $db_con->prepare('SELECT * FROM usuarios WHERE cpf = :cpf');
-        $result = $stmt->execute(['cpf' => $cpf]);
-        if (!$result) {
-            return new User([]);
+        $stmt = $db_con->prepare("SELECT * FROM usuarios WHERE cpf = :cpf");
+        $result = $stmt->execute(["cpf" => $cpf]);
+        $result = $result->fetch();
+        if (!$result || empty($result) {
+            throw new UserNotFoundException('User not found');
         }
-        $newUser = new User(
-            [
-                'fullname' => $result['nomeCompleto'],
-                'dob' => $result['dataNasc'],
-                'gender' => $result['genero'],
-                'mothername' => $result['nomeMae'],
-                'cpf' => $result['cpf'],
-                'email' => $result['email'],
-                'celular' => $result['celular'],
-                'fixo' => $result['fixo'],
-                'endereco_id' => $result['endereco_id']
-            ]
-            );
-        $newUser->setId($result['id']);
-        $newUser->setCreatedAt($result['created_at']);
-        $newUser->setUpdatedAt($result['updated_at']);
-        return $newUser;
+
+        // assign the result to this instance
+        $this->setFullname($result["nomeCompleto"]);
+        $this->setDob($result["dataNasc"]);
+        $this->setGender($result["genero"]);
+        $this->setMothername($result["nomeMae"]);
+        $this->setCpf($result["cpf"]);
+        $this->setEmail($result["email"]);
+        $this->setCelular($result["celular"]);
+        $this->setFixo($result["fixo"]);
+        $this->setEnderecoId($result["endereco_id"]);
+        $this->setId($result["id"]);
+        $this->setCreatedAt($result["created_at"]);
+        $this->setUpdatedAt($result["updated_at"]);
+        return $this;
+
     }
 
-    public function user_exists(){
-        $user = $this->find($this->getCpf());
-        if($user->userNotFound){
-            return false;
-        }
-        return true;
+    public function user_exists()
+    {
+     try {
+         $this->find($this->getCpf());
+            return true;
+     } catch (UserNotFoundException $e) {
+         return false;
+     }
     }
     // getters and setters
     public function getId(): int
@@ -225,6 +241,4 @@ class User extends Model
     {
         $this->endereco_id = $endereco_id;
     }
-
-
 }

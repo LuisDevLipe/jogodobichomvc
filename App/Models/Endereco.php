@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 use Core\Model;
-
+use App\Exceptions\UnableToPersistDataException;
 
 class Endereco extends Model
 {
@@ -18,77 +18,95 @@ class Endereco extends Model
 
     private bool $enderecoNotFound = false;
 
-    public function __construct(array $constructor = [cep, street, number, city, state, complement, neighborhood, country])
-    {
+    public function __construct(
+        array $constructor = [
+            cep,
+            street,
+            number,
+            city,
+            state,
+            complement,
+            neighborhood,
+            country,
+        ]
+    ) {
         if (!empty($constructor)) {
-            $this->setCep($constructor['cep']);
-            $this->setStreet($constructor['street']);
-            $this->setNumber($constructor['number']);
-            $this->setCity($constructor['city']);
-            $this->setState($constructor['state']);
-            $this->setComplement($constructor['complement']);
-            $this->setNeighborhood($constructor['neighborhood']);
-            $this->setCountry($constructor['country']);
+            $this->setCep($constructor["cep"]);
+            $this->setStreet($constructor["street"]);
+            $this->setNumber($constructor["number"]);
+            $this->setCity($constructor["city"]);
+            $this->setState($constructor["state"]);
+            $this->setComplement($constructor["complement"]);
+            $this->setNeighborhood($constructor["neighborhood"]);
+            $this->setCountry($constructor["country"]);
         } else {
             $this->enderecoNotFound = true;
         }
     }
 
-    public function create():Endereco
+    public function create(): Endereco
     {
         $db_con = self::connect();
-        if($this->adress_exists()){
+        if ($this->adress_exists()) {
             return $this;
         }
-        $stmt = $db_con->prepare('INSERT INTO endereco (cep, rua, numero, cidade, estado, complemento, bairro, pais) VALUES (:cep, :street, :number, :city, :state, :complement, :neighborhood, :country)');
+        $stmt = $db_con->prepare(
+            "INSERT INTO endereco (cep, rua, numero, cidade, estado, complemento, bairro, pais) VALUES (:cep, :street, :number, :city, :state, :complement, :neighborhood, :country)"
+        );
         $result = $stmt->execute([
-            'cep' => $this->getCep(),
-            'street' => $this->getStreet(),
-            'number' => $this->getNumber(),
-            'city' => $this->getCity(),
-            'state' => $this->getState(),
-            'complement' => $this->getComplement(),
-            'neighborhood' => $this->getNeighborhood(),
-            'country' => $this->getCountry()
+            "cep" => $this->getCep(),
+            "street" => $this->getStreet(),
+            "number" => $this->getNumber(),
+            "city" => $this->getCity(),
+            "state" => $this->getState(),
+            "complement" => $this->getComplement(),
+            "neighborhood" => $this->getNeighborhood(),
+            "country" => $this->getCountry(),
         ]);
-        if (!$result) { 
+        if (!$result) {
+            throw new UnableToPersistDataException(
+                "Não foi possível persistir os dados do endereço"
+            );
         }
         $this->setId($db_con->lastInsertId());
-        $this->updated_at = new \DateTime(timezone: new \DateTimeZone('America/Sao_Paulo'));
+        $this->updated_at = new \DateTime(
+            timezone: new \DateTimeZone("America/Sao_Paulo")
+        );
         return $this;
     }
     public function show(Endereco $Endereco): Endereco
     {
-
     }
 
     public static function find(Endereco $Endereco): Endereco
     {
         $db_con = self::connect();
-        $stmt = $db_con->prepare('SELECT * FROM endereco WHERE cep = :cep AND rua = :street AND numero = :number AND cidade = :city AND estado = :state AND complemento = :complement AND bairro = :neighborhood AND pais = :country');
+        $stmt = $db_con->prepare(
+            "SELECT * FROM endereco WHERE cep = :cep AND rua = :street AND numero = :number AND cidade = :city AND estado = :state AND complemento = :complement AND bairro = :neighborhood AND pais = :country"
+        );
         $stmt->execute([
-            'cep' => $Endereco->getCep(),
-            'street' => $Endereco->getStreet(),
-            'number' => $Endereco->getNumber(),
-            'city' => $Endereco->getCity(),
-            'state' => $Endereco->getState(),
-            'complement' => $Endereco->getComplement(),
-            'neighborhood' => $Endereco->getNeighborhood(),
-            'country' => $Endereco->getCountry()
+            "cep" => $Endereco->getCep(),
+            "street" => $Endereco->getStreet(),
+            "number" => $Endereco->getNumber(),
+            "city" => $Endereco->getCity(),
+            "state" => $Endereco->getState(),
+            "complement" => $Endereco->getComplement(),
+            "neighborhood" => $Endereco->getNeighborhood(),
+            "country" => $Endereco->getCountry(),
         ]);
         $result = $stmt->fetch();
         if (!$result) {
             return new Endereco([]);
         }
-        $this->setId($result['id']);
-        $this->updated_at = $result['updated_at'];
+        $this->setId($result["id"]);
+        $this->updated_at = $result["updated_at"];
         $this->userNotFound = false;
         return $this;
     }
-    private function adress_exists() : bool
+    private function adress_exists(): bool
     {
         $address = $this->find($this);
-        if($address->getEnderecoNotFound()){
+        if ($address->getEnderecoNotFound()) {
             return false;
         }
         return true;
@@ -178,5 +196,4 @@ class Endereco extends Model
     {
         return $this->enderecoNotFound;
     }
-
 }
