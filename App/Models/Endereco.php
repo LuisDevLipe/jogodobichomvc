@@ -2,6 +2,7 @@
 namespace App\Models;
 use Core\Model;
 use App\Exceptions\UnableToPersistDataException;
+use App\Exceptions\EnderecoNotFoundException;
 
 class Endereco extends Model
 {
@@ -69,34 +70,28 @@ class Endereco extends Model
             );
         }
         $this->setId($db_con->lastInsertId());
-        $this->updated_at = new \DateTime(
-            timezone: new \DateTimeZone("America/Sao_Paulo")
-        );
+        $this->updated_at = new \DateTime('now', new \DateTimeZone("America/Sao_Paulo"));
         return $this;
     }
-    public function show(Endereco $Endereco): Endereco
-    {
-    }
-
-    public static function find(Endereco $Endereco): Endereco
+    public function show($param): Endereco
     {
         $db_con = self::connect();
         $stmt = $db_con->prepare(
             "SELECT * FROM endereco WHERE cep = :cep AND rua = :street AND numero = :number AND cidade = :city AND estado = :state AND complemento = :complement AND bairro = :neighborhood AND pais = :country"
         );
         $stmt->execute([
-            "cep" => $Endereco->getCep(),
-            "street" => $Endereco->getStreet(),
-            "number" => $Endereco->getNumber(),
-            "city" => $Endereco->getCity(),
-            "state" => $Endereco->getState(),
-            "complement" => $Endereco->getComplement(),
-            "neighborhood" => $Endereco->getNeighborhood(),
-            "country" => $Endereco->getCountry(),
+            "cep" => $this->getCep(),
+            "street" => $this->getStreet(),
+            "number" => $this->getNumber(),
+            "city" => $this->getCity(),
+            "state" => $this->getState(),
+            "complement" => $this->getComplement(),
+            "neighborhood" => $this->getNeighborhood(),
+            "country" => $this->getCountry(),
         ]);
         $result = $stmt->fetch();
         if (!$result) {
-            return new Endereco([]);
+            throw new EnderecoNotFoundException();
         }
         $this->setId($result["id"]);
         $this->updated_at = $result["updated_at"];
@@ -105,11 +100,12 @@ class Endereco extends Model
     }
     private function adress_exists(): bool
     {
-        $address = $this->find($this);
-        if ($address->getEnderecoNotFound()) {
+        try {
+            $this->show($this);
+            return true;
+        } catch (EnderecoNotFoundException $e) {
             return false;
         }
-        return true;
     }
     // getters and setters
     public function getId(): int

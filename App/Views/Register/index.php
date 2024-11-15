@@ -39,11 +39,13 @@
                     <input required type="email" name="email" id="email" />
                 </fieldset>
                 <fieldset><label for="celular">Celular</label><input required type="cel" name="celular"
-                        pattern="\(\+[0-9]{2}\)[0-9]{2}-[0-9]{9}" placeholder="(+55)21-999999999"
+                      <?php  /* pattern="\(\+[0-9]{2}\)[0-9]{2}-[0-9]{9}" */ ?>
+                         placeholder="(+55)21-999999999"
                         oninput="formatarCelular(this.value,this,celular)" onchange="validarTelefone(this.value,this)">
                 </fieldset>
                 <fieldset><label for="fixo">Fixo</label><input required type="tel" name="fixo"
-                        pattern="\(\+[0-9]{2}\)[0-9]{2}-[0-9]{8}" placeholder="(+55)21-999999999"
+                <?php  /* pattern="\(\+[0-9]{2}\)[0-9]{2}-[0-9]{8}" */ ?>
+                         placeholder="(+55)21-999999999"
                         oninput="formatarFixo(this.value,this,'fixo')" onchange="validarTelefone(this.value,this,true)">
                 </fieldset>
             </div>
@@ -95,6 +97,8 @@
         <a href="/pages/login/login.php">Login</a>
 
     </form>
+    <?= $data['error'] ?? '' ?>
+    <?= $data['success'] ?? '' ?>
 
 </body>
 

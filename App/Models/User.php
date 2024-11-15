@@ -2,6 +2,7 @@
 namespace App\Models;
 use Core\Model;
 use App\Exceptions\UnableToPersistDataException;
+use App\Exceptions\UserNotFoundException;
 
 
 class User extends Model
@@ -48,11 +49,6 @@ class User extends Model
             $this->userNotFound = true;
         }
     }
-    public static function show($cpf): User
-    {
-        return new User();
-    }
-
     public static function findById($user_id): User
     {
         $stmt = self::connect()->prepare(
@@ -100,21 +96,24 @@ class User extends Model
             "fixo" => $this->getFixo(),
             "endereco_id" => $this->getEnderecoId(),
         ]);
+
         if (!$result) {
-            throw new UnableToPersistDataException('Unable to persist user data'');
+            throw new UnableToPersistDataException('Unable to persist user data');
         }
+
         $this->setId($db_con->lastInsertId());
-        $this->setCreatedAt($result["created_at"]);
-        $this->setUpdatedAt($result["updated_at"]);
+        $this->setCreatedAt(new \DateTime('now', new \DateTimeZone("America/Sao_Paulo")));
+        $this->setUpdatedAt(new \DateTime('now', new \DateTimeZone("America/Sao_Paulo")));
         return $this;
     }
-    public static function find(string $cpf): User
+    public function show($param): User
     {
         $db_con = self::connect();
         $stmt = $db_con->prepare("SELECT * FROM usuarios WHERE cpf = :cpf");
-        $result = $stmt->execute(["cpf" => $cpf]);
-        $result = $result->fetch();
-        if (!$result || empty($result) {
+        $stmt->execute(["cpf" => $param]);
+        $result = $stmt->fetch();
+
+        if (!$result || empty($result)) {
             throw new UserNotFoundException('User not found');
         }
 
@@ -137,12 +136,13 @@ class User extends Model
 
     public function user_exists()
     {
-     try {
-         $this->find($this->getCpf());
+        try {
+            $this->show($this->getCpf());
             return true;
-     } catch (UserNotFoundException $e) {
-         return false;
-     }
+
+        } catch (UserNotFoundException $e) {
+            return false;
+        }
     }
     // getters and setters
     public function getId(): int

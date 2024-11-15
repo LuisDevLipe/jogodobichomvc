@@ -43,6 +43,7 @@ class Credential extends Model
             "password" => $this->getPassword(),
             "user_id" => $this->getUserId(),
         ]);
+        $result = $stmt->fetch();
         if (!$result) {
             throw new UnableToPersistDataException();
         }
@@ -53,17 +54,17 @@ class Credential extends Model
         $this->setLoginAttempts($result["tentativasLogin"]);
         $this->setIsAccountLocked($result["contaTravada"]);
         $this->setUpdatedAt(
-            new \DateTime(new \DateTimeZone("America/Sao Paulo"))
+            new \DateTime($result['updated_at'], new \DateTimeZone("America/Sao Paulo"))
         );
         return $this;
     }
-    public static function show($username): Credential
+    public function show($param): Credential
     {
         $db_con = self::connect();
         $stmt = $db_con->prepare(
             "SELECT * FROM credenciais WHERE nomeUsuario = :username"
         );
-        $stmt->execute(["username" => "admin"]);
+        $stmt->execute(["username" => $param]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new UsernameNotFoundException();
@@ -76,7 +77,7 @@ class Credential extends Model
         $this->setLoginAttempts($result["tentativasLogin"]);
         $this->setIsAccountLocked($result["contaTravada"]);
         $this->setUpdatedAt(
-            new \DateTime(new \DateTimeZone("America/Sao Paulo"))
+            new \DateTime($result['updated_at'], new \DateTimeZone("America/Sao Paulo"))
         );
         return $this;
     }

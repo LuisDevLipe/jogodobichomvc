@@ -21,37 +21,46 @@ class Register extends Controller
         }
         $this->validatePOST(payload: $_POST);
 
-        $Endereco = $this->getModel("Address", [
-            "logradouro" => $_POST["logradouro"],
-            "numero" => $_POST["numero"],
-            "complemento" => $_POST["complemento"] ?? null,
-            "bairro" => $_POST["bairro"],
-            "cidade" => $_POST["cidade"],
-            "estado" => $_POST["estado"],
-            $_POST["pais"],
-            "cep" => $_POST["cep"],
-        ]);
-        $Endereco = $Endereco->create();
-        $Usuario = $this->getModel("User", [
-            "fullname" => $_POST["fullname"],
-            "dob" => $_POST["dob"],
-            "gender" => $_POST["gender"],
-            "mothername" => $_POST["mothername"],
-            "email" => $_POST["email"],
-            "cpf" => $_POST["cpf"],
-            "celular" => $_POST["celular"],
-            "fixo" => $_POST["fixo"],
-            "endereco_id" => $Endereco->getId(),
-        ]);
-        $Usuario = $Usuario->create();
-        if (!$Usuario) {
-            $Credenciais = $this->getModel("Credential", [
-                "username" => $_POST["username"],
-                "password" => $_POST["password"],
-                "user_id" => $Usuario->getId(),
+        try {
+
+            $Endereco = $this->getModel("Address", [
+                "logradouro" => $_POST["logradouro"],
+                "numero" => $_POST["numero"],
+                "complemento" => $_POST["complemento"] ?? null,
+                "bairro" => $_POST["bairro"],
+                "cidade" => $_POST["cidade"],
+                "estado" => $_POST["estado"],
+                $_POST["pais"],
+                "cep" => $_POST["cep"],
             ]);
+            $Endereco = $Endereco->create();
+            $Usuario = $this->getModel("User", [
+                "fullname" => $_POST["fullname"],
+                "dob" => $_POST["dob"],
+                "gender" => $_POST["gender"],
+                "mothername" => $_POST["mothername"],
+                "email" => $_POST["email"],
+                "cpf" => $_POST["cpf"],
+                "celular" => $_POST["celular"],
+                "fixo" => $_POST["fixo"],
+                "endereco_id" => $Endereco->getId(),
+            ]);
+            $Usuario = $Usuario->create();
+            if (!$Usuario) {
+                $Credenciais = $this->getModel("Credential", [
+                    "username" => $_POST["username"],
+                    "password" => $_POST["password"],
+                    "user_id" => $Usuario->getId(),
+                ]);
+            }
+            $Credenciais->create($Credenciais);
+
+            $this->view->render(["success" => "Usuário cadastrado com sucesso"]);
+
+        } catch (\Exception $e) {
+            $this->view->render(["error" => $e->getMessage()]);
+            exit();
         }
-        $Credenciais->create($Credenciais);
     }
     public function validatePOST($payload): void
     {
@@ -79,7 +88,12 @@ class Register extends Controller
         ) {
             $isValid = true;
         }
-        $this->view->render(["error" => "Preencha todos os campos"]);
-        exit();
+        if ($isValid) {
+            return;
+        } else {
+
+            $this->view->render(["error" => "Preencha todos os campos"]);
+            exit();
+        }
     }
 }

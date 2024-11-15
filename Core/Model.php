@@ -5,8 +5,8 @@ use PDO;
 
 interface ModelInterface
 {
-    public static function show($username): Model;
-    public function create(object $model): bool;
+    public static function show($param): Model;
+    public function create(): Model;
 }
 
 abstract class Model implements ModelInterface
