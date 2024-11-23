@@ -4,7 +4,7 @@ use Core\Model;
 use App\Exceptions\UnableToPersistDataException;
 use App\Exceptions\EnderecoNotFoundException;
 
-class Endereco extends Model
+class Address extends Model
 {
     private int $id;
     private string $cep;
@@ -45,14 +45,14 @@ class Endereco extends Model
         }
     }
 
-    public function create(): Endereco
+    public function create(): Address
     {
         $db_con = self::connect();
         if ($this->adress_exists()) {
             return $this;
         }
         $stmt = $db_con->prepare(
-            "INSERT INTO endereco (cep, rua, numero, cidade, estado, complemento, bairro, pais) VALUES (:cep, :street, :number, :city, :state, :complement, :neighborhood, :country)"
+            "INSERT INTO endereco (cep, logradouro, numero, cidade, estado, complemento, bairro, pais) VALUES (:cep, :street, :number, :city, :state, :complement, :neighborhood, :country)"
         );
         $result = $stmt->execute([
             "cep" => $this->getCep(),
@@ -73,11 +73,11 @@ class Endereco extends Model
         $this->updated_at = new \DateTime('now', new \DateTimeZone("America/Sao_Paulo"));
         return $this;
     }
-    public function show($param): Endereco
+    public function show($param): Address
     {
         $db_con = self::connect();
         $stmt = $db_con->prepare(
-            "SELECT * FROM endereco WHERE cep = :cep AND rua = :street AND numero = :number AND cidade = :city AND estado = :state AND complemento = :complement AND bairro = :neighborhood AND pais = :country"
+            "SELECT * FROM endereco WHERE cep = :cep AND logradouro = :street AND numero = :number AND cidade = :city AND estado = :state AND complemento = :complement AND bairro = :neighborhood AND pais = :country"
         );
         $stmt->execute([
             "cep" => $this->getCep(),

@@ -24,9 +24,10 @@ class Credential extends Model
             $this->setUsername($constructor["username"]);
             $this->setPassword($constructor["password"]);
             $this->setUserId($constructor["user_id"]);
-        } else {
-            $this->usernameNotFound = true;
         }
+        //  else {
+        //     $this->usernameNotFound = true;
+        // }
     }
 
     public function create(): Credential
@@ -45,7 +46,7 @@ class Credential extends Model
         ]);
         $result = $stmt->fetch();
         if (!$result) {
-            throw new UnableToPersistDataException();
+            throw new UnableToPersistDataException('Something went wrong when getting your credentials stored');
         }
         $this->setUsername($result["nomeUsuario"]);
         $this->setPassword($result["senha"]);
@@ -54,9 +55,26 @@ class Credential extends Model
         $this->setLoginAttempts($result["tentativasLogin"]);
         $this->setIsAccountLocked($result["contaTravada"]);
         $this->setUpdatedAt(
-            new \DateTime($result['updated_at'], new \DateTimeZone("America/Sao Paulo"))
+            new \DateTime($result['updated_at'], new \DateTimeZone("America/Sao_Paulo"))
         );
         return $this;
+    }
+    public static function authenticate($username, $password)
+    {
+        $db_con = self::connect();
+        $stmt = $db_con->prepare("SELECT nomeUsuario, senha FROM credenciais WHERE nomeUsuario = :username");
+        $stmt->execute(['username' => $username]);
+        $result = $stmt->fetch();
+
+        if (!$result || empty($result)) {
+            throw new UsernameNotFoundException('Usuário ou senha inválidos.');
+        }
+        if (!password_verify($password, $result['senha'])) {
+            throw new UsernameNotFoundException('Usuário ou senha inválidos.');
+        }
+
+        die('usuario autenticado');
+
     }
     public function show($param): Credential
     {
@@ -77,7 +95,7 @@ class Credential extends Model
         $this->setLoginAttempts($result["tentativasLogin"]);
         $this->setIsAccountLocked($result["contaTravada"]);
         $this->setUpdatedAt(
-            new \DateTime($result['updated_at'], new \DateTimeZone("America/Sao Paulo"))
+            new \DateTime($result['updated_at'], new \DateTimeZone("America/Sao_Paulo"))
         );
         return $this;
     }
@@ -131,7 +149,7 @@ class Credential extends Model
     }
     public function setPassword(string $password): void
     {
-        $this->password = $password;
+        $this->password = password_hash(password: $password, algo: PASSWORD_BCRYPT);
     }
     public function setIsAdmin(bool $is_admin): void
     {

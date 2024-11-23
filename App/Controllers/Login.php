@@ -21,8 +21,10 @@ class Login extends Controller
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        $credentials = $this->getModel('Credential', ['username' => $username, 'password' => $password]);
-        $credentialsFromDB = $credentials::show($credentials->getUsername());
+        $credentials = $this->getModel('Credential', []);
+
+        $credentials::authenticate($username, $password);
+        die();
 
         $validation = $this->validate($credentials, $credentialsFromDB);
         $authentication = $this->authenticate($credentials, $credentialsFromDB);

@@ -2,7 +2,7 @@
 namespace App\Controllers;
 
 use Core\Controller;
-
+use App\Exceptions\UserAlreadyExistsException;
 class Register extends Controller
 {
     public function __construct()
@@ -24,21 +24,21 @@ class Register extends Controller
         try {
 
             $Endereco = $this->getModel("Address", [
-                "logradouro" => $_POST["logradouro"],
-                "numero" => $_POST["numero"],
-                "complemento" => $_POST["complemento"] ?? null,
-                "bairro" => $_POST["bairro"],
-                "cidade" => $_POST["cidade"],
-                "estado" => $_POST["estado"],
-                $_POST["pais"],
+                "street" => $_POST["logradouro"],
+                "number" => $_POST["numero"],
+                "complement" => $_POST["complemento"] ?? null,
+                "neighborhood" => $_POST["bairro"],
+                "city" => $_POST["cidade"],
+                "state" => $_POST["estado"],
+                "country" => $_POST["pais"],
                 "cep" => $_POST["cep"],
             ]);
             $Endereco = $Endereco->create();
             $Usuario = $this->getModel("User", [
-                "fullname" => $_POST["fullname"],
+                "fullname" => $_POST["name"],
                 "dob" => $_POST["dob"],
                 "gender" => $_POST["gender"],
-                "mothername" => $_POST["mothername"],
+                "mothername" => $_POST["filiation-name"],
                 "email" => $_POST["email"],
                 "cpf" => $_POST["cpf"],
                 "celular" => $_POST["celular"],
@@ -46,14 +46,12 @@ class Register extends Controller
                 "endereco_id" => $Endereco->getId(),
             ]);
             $Usuario = $Usuario->create();
-            if (!$Usuario) {
-                $Credenciais = $this->getModel("Credential", [
-                    "username" => $_POST["username"],
-                    "password" => $_POST["password"],
-                    "user_id" => $Usuario->getId(),
-                ]);
-            }
-            $Credenciais->create($Credenciais);
+            $Credenciais = $this->getModel("Credential", [
+                "username" => $_POST["username"],
+                "password" => $_POST["password"],
+                "user_id" => $Usuario->getId(),
+            ]);
+            $Credenciais->create();
 
             $this->view->render(["success" => "Usuário cadastrado com sucesso"]);
 

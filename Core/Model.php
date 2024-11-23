@@ -5,7 +5,7 @@ use PDO;
 
 interface ModelInterface
 {
-    public static function show($param): Model;
+    public function show($param): Model;
     public function create(): Model;
 }
 
