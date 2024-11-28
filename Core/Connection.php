@@ -5,8 +5,8 @@ use \PDO;
 class Connection
 {
     private static $host = 'localhost';
-    private static $user = 'root';
-    private static $password = '';
+    private static $user = 'luis';
+    private static $password = 'admin';
     private static $database = 'db_jogodobicho';
 
     private static $instance = null;

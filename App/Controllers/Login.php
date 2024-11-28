@@ -23,19 +23,16 @@ class Login extends Controller
 
         $credentials = $this->getModel('Credential', []);
 
-        $credentials::authenticate($username, $password);
-        die();
-
-        $validation = $this->validate($credentials, $credentialsFromDB);
-        $authentication = $this->authenticate($credentials, $credentialsFromDB);
-
-        if (!$validation || !$authentication) {
-            $this->view->render(['error' => 'Usuário ou senha inválidos']);
-        } else {
-            // set username in a cookie using sha256 encryption
-            setcookie('user_id', $this->ssl_encrypt($credentialsFromDB->getUserId()), time() + 1200, path: '/', secure: true, httponly: true);
-            $this->redirect('/A2f');
+        try {
+            $isAuthenticated = $credentials::authenticate($username, $password);
+            if ($isAuthenticated) {
+                $this->saveSession('username', $username);
+                $this->redirect('/A2f');
+            }
+        } catch (\Exception $e) {
+            $this->sendError($e->getMessage());
         }
+
     }
 
     protected function validate(object $credentials, object $credentialsFromDB): bool

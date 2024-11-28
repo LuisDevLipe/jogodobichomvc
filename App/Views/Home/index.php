@@ -14,6 +14,7 @@
         
     </nav>
     <h1>Home</h1>
+    <p>This is home view</p>
     <p><?= $data[0] ?? '' ?></p>
 
 </body>

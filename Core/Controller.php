@@ -32,18 +32,27 @@ class Controller
         exit();
     }
 
-
-    public function ssl_encrypt($data): string
+    public function sendSuccess($success): never
     {
-        $key = file_get_contents('../key.txt');
-        $data = openssl_encrypt($data, "AES-128-ECB", $key);
-        return base64_encode($data);
-
+        exit();
     }
-    public function ssl_decrypt($data): string
+
+    public function saveSession($key, $value): void
     {
-        $key = file_get_contents('../key.txt');
-        $data = openssl_decrypt(base64_decode($data), "AES-128-ECB", $key);
-        return $data;
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $_SESSION[$key] = $value;
+
+        session_commit();
+    }
+    public function getFromSession($key)
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $value = $_SESSION[$key] ?? null;
+        session_commit();
+        return $value;
     }
 }

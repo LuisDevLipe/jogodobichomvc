@@ -53,7 +53,7 @@ class Register extends Controller
             ]);
             $Credenciais->create();
 
-            $this->view->render(["success" => "Usuário cadastrado com sucesso"]);
+            $this->redirect("/Login");
 
         } catch (\Exception $e) {
             $this->view->render(["error" => $e->getMessage()]);

@@ -73,7 +73,10 @@ class Credential extends Model
             throw new UsernameNotFoundException('Usuário ou senha inválidos.');
         }
 
-        die('usuario autenticado');
+        if (!password_verify($password, $result['senha'])) {
+            return false;
+        }
+        return true;
 
     }
     public function show($param): Credential
