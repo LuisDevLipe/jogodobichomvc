@@ -1,18 +1,22 @@
 <?php
 namespace Core;
 use Core\Connection;
+use PDO;
 
 interface ModelInterface
 {
-    public static function show(): Model;
+    public function show($param): Model;
+    public function create(): Model;
 }
 
 abstract class Model implements ModelInterface
 {
-    protected $connection;
     public function __construct()
     {
-        $this->connection = Connection::getInstance();
+    }
+    public static function connect(): PDO
+    {
+        return Connection::getInstance();
     }
 }
 

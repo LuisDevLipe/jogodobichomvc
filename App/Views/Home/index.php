@@ -10,10 +10,12 @@
 <body>
     <nav>
         <a href="/Login">Login</a>
-        
+        <a href="/Register">Cadastro</a>
+
     </nav>
     <h1>Home</h1>
-    <p><?= $data[0] ?? '' ?></p>
+    <p>This is home view</p>
+    <p><?= $data[0] ?? "" ?></p>
 
 </body>
 
