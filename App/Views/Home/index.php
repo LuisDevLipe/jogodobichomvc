@@ -11,11 +11,11 @@
     <nav>
         <a href="/Login">Login</a>
         <a href="/Register">Cadastro</a>
-        
+
     </nav>
     <h1>Home</h1>
     <p>This is home view</p>
-    <p><?= $data[0] ?? '' ?></p>
+    <p><?= $data[0] ?? "" ?></p>
 
 </body>
 
